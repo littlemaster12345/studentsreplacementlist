@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LITTLE MASTER S2 - RECORDS OF STUDENTS' REPLACEMENT LIST</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            position: relative;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        input[type="text"], input[type="date"], select {
+            width: 90%;
+            padding: 5px;
+        }
+        button {
+            padding: 5px 10px;
+            margin-top: 10px;
+        }
+        #logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            max-width: 150px;
+            height: auto;
+        }
+        #studentList div {
+            cursor: pointer;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        #studentList div:hover {
+            background-color: #e9e9e9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>LITTLE MASTER S2 - RECORDS OF STUDENTS' REPLACEMENT LIST</h2>
+        <!-- Image from Google Drive -->
+        <img id="logo" src="Little Master Logo.png" alt="Little Master Logo">
+    </header>
+
+    <form id="absenceForm">
+        <label>Student Name:</label>
+        <input type="text" id="studentName" onkeyup="filterStudentList()" placeholder="Search student..." required>
+        <div id="studentList"></div><br>
+        <label>Absent Date:</label>
+        <input type="date" id="absentDate" required><br><br>
+        <label>Replacement Class Date:</label>
+        <input type="date" id="replacementDate"><br><br>
+        <button type="button" onclick="addRecord()">Add Record</button>
+    </form>
+
+    <h3>Search Records</h3>
+    <input type="text" id="searchInput" placeholder="Search by student name..." onkeyup="searchRecords()">
+
+    <h3>Absence Records</h3>
+    <table id="recordsTable">
+        <tr>
+            <th>Student Name</th>
+            <th>Absent Date</th>
+            <th>Replacement Class Date</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+
+    <h3>Completed Replacements (by Month)</h3>
+    <div id="completedReplacements"></div>
+
+    <h3>Manage Student List</h3>
+    <input type="text" id="newStudentName" placeholder="Enter new student name">
+    <button onclick="addStudent()">Add Student</button>
+    <button onclick="removeStudent()">Remove Student</button>
+    <button onclick="editStudent()">Edit Student Name</button>
+
+    <script>
+        let students = [
+            "ADELIA FILZAH", "AIDEN LEE", "ALEESA", "ALI AL SUFI", "ALWIS CHAN", "ANG JIA WEI", "ANG KANG QIAO", 
+            "ANG PEI YU", "ANNASTASYA ELIZABETH", "ARSHINI A/P INDRAN", "AVERY CHAN", "CAYDEN SAM HAO XUAN", 
+            "CHAN WAN YI", "CHLOE PENG", "CHLOE SAM HAO YEE", "CHONG CHUN BIN", "CHONG XU JIE", "CHOO JIUN HAN", 
+            "CHRISTOPHER KINGSLEY DANIEL", "CHUAH SHANG YI", "DAMIAN GOH CHUN HO", "DAPHNE PHAN", "EDEN ZHENG BO NAN", 
+            "EESAYINI", "ELDON HOR", "ELIJAH JUSTIN SAMUEL", "ELLA", "ELLEN", "ELWYN GAN KAR XEN", "ELYNNA HUANG TSE JEAN", 
+            "ETHAN CHEW EE SHENG", "ETHAN GOH CHUN KIT", "ETHAN LIM JUN EE", "EUNICE TAN XIN TONG", "EVONY GAN KAR VEN", 
+            "HAJAR AMNI", "HANI AMELIA BT AHMAD ZAKI", "HAROLD CHENG BO HAO", "HARVIE CHENG ZHENG HANG", "HAYDEN TEH", 
+            "HIU EE TYAN", "HON LU JIE", "JAIVARTHAAN", "JASPER OH YIK HAN", "JASPER SIOW JIA YEE", "JAYDEN SAM HAO ZHE", 
+            "JERRY", "JULLIAN WONG YI CHERN", "KAN KHAI YIT", "KAVIN PRAKASH", "KEV GAN KAI HENG", "KUNAAL THIRUCHELVAM", 
+            "KWANG XIN QIAO", "KWANG XIN WEI", "LAI QUN YANG", "LAI QUN YI", "LAM PEI EN", "LEE AN JIA @ VICKY", 
+            "LEE MING ZHE", "LEONG JUN CHEN", "LEONG JUN XIAN", "LIANG ZI HAN", "LO ZI YEN", "LUCAS TAN", "MAREEN KAUR", 
+            "MECUS TAN", "MIQAILA AMIRUL AMZAR", "MUSE FONG ZY THONG", "NG YAN QI", "NUR QAIREEN", "NURDAYANI ALEEYA", 
+            "NURSYIFAA CLAIRESA", "OSCAR CHEW JUN MING", "PAVEIPRAJANAA", "POON ZANG EE", "REEANA KAUR", "SAM YAN XIN", 
+            "SARA FONG SZE YUN", "SEE YI EN", "SIOW JUN XIANG", "SUDIKSHA D/O NATHAN", "TEO ERN YI", "TERRENCE HU GUO XIANG", 
+            "THO YU HOONG", "THO YU PANG", "VAISNAV", "VHARUN PARTHIBAN", "WONG CHEN HAO", "WONG QIAO MIN"
+        ];
+
+        function filterStudentList() {
+            const input = document.getElementById('studentName').value.toLowerCase();
+            const studentList = document.getElementById('studentList');
+            studentList.innerHTML = '';
+
+            students.filter(name => name.toLowerCase().includes(input)).forEach(name => {
+                const div = document.createElement('div');
+                div.textContent = name;
+                div.onclick = () => {
+                    document.getElementById('studentName').value = name;
+                    studentList.innerHTML = '';
+                };
+                studentList.appendChild(div);
+            });
+        }
+
+        function addStudent() {
+            const newName = document.getElementById('newStudentName').value.trim();
+            if (newName && !students.includes(newName)) {
+                students.push(newName);
+                alert(`${newName} has been added.`);
+                document.getElementById('newStudentName').value = '';
+            } else {
+                alert('Name is empty or already exists.');
+            }
+        }
+
+        function removeStudent() {
+            const nameToRemove = document.getElementById('newStudentName').value.trim();
+            const index = students.indexOf(nameToRemove);
+            if (index > -1) {
+                students.splice(index, 1);
+                alert(`${nameToRemove} has been removed.`);
+                document.getElementById('newStudentName').value = '';
+            } else {
+                alert('Name not found.');
+            }
+        }
+
+        function editStudent() {
+            const oldName = prompt('Enter the current student name:');
+            const newName = prompt('Enter the new student name:');
+            const index = students.indexOf(oldName);
+            if (index > -1 && newName) {
+                students[index] = newName;
+                alert(`${oldName} has been changed to ${newName}.`);
+            } else {
+                alert('Invalid operation.');
+            }
+        }
+
+        function addRecord() {
+            // Code to add a new record
+        }
+
+        function searchRecords() {
+            // Code to search for records
+        }
+    </script>
+</body>
+</html>
